@@ -1,5 +1,6 @@
 import { Mic } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 import { WhisperModel } from './App';
 import { model, loadRemote, startRecording, stopRecording } from './helpers';
 
@@ -76,6 +77,11 @@ export default function Transcription({
 
     startRecording({ setTranscribing, model: whisperModel.name, setNotificaitonMessage });
   }, [loadWhisperModel, ready, recording, setNotificaitonMessage, setRecording, setTranscribing, whisperModel.name]);
+
+  useHotkeys('r', () => {
+    transcribe();
+  });
+
   const isInProgress = progress > 0 && progress < 1 && !ready;
 
   return (

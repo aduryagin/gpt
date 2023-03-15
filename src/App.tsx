@@ -5,9 +5,10 @@ import PromptsModal, { modalId } from './PromptsModal';
 import Transcription from './Transcription';
 import { kMaxAudio_s, scrollToTheBottom, stopRecording } from './helpers';
 import ApiKeyModal from './ApiKeyModal';
-import { Key } from 'lucide-react';
+import { LucideSettings } from 'lucide-react';
 import Notification from './Notification';
 import StartNewConversation from './StartNewConversation';
+import { useSettings } from './hooks';
 
 export type WhisperModel = { size: number; name: string; description: string };
 export type Message = { role: ChatCompletionRequestMessageRoleEnum; date: Date; content: string };
@@ -37,11 +38,13 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
   todo:
     - settings. send right after transcription is done
     - button to resend messages if something went wrong
+    - system message setting
     - history
     - save custom prompts to local storage / indexed db
 */
 
 function App() {
+  const settings = useSettings();
   const [apiKey, setApiKey] = useState(localStorage.getItem('apiKey') || '');
   const [apiKeyModalVisible, setApiKeyModalVisible] = useState(!apiKey);
   const saveApiKey = useCallback((value: string) => {
@@ -64,34 +67,6 @@ function App() {
   const [whisperModel, setWhisperModel] = useState<WhisperModel>(
     whisperModels.find((model) => model.name === localStorage.getItem('whisperModel')) || whisperModels[0],
   );
-
-  // capture transcription
-  useEffect(() => {
-    // @ts-ignore
-    window.transcriptionCallback = function (transcription: string) {
-      if (transcription.includes('openaiapi:')) {
-        setMessage(message + transcription.replace('openaiapi:', '').trim());
-        setTranscribing(false);
-        setRecordingTime(kMaxAudio_s);
-        return;
-      }
-
-      const result = /\[0.*-->.*0\]/.exec(transcription);
-      if (result) {
-        setMessage(message + transcription.replace(result[0], '').trim());
-      }
-    };
-
-    // @ts-ignore
-    window.transcriptionEndCallback = function (message: string) {
-      const endOfTranscribing = message.includes('whisper_print_timings:') && message.includes('total time = ');
-
-      if (endOfTranscribing) {
-        setTranscribing(false);
-        setRecordingTime(kMaxAudio_s);
-      }
-    };
-  }, [message]);
 
   // load voices
   useEffect(() => {
@@ -253,6 +228,40 @@ function App() {
     },
     [apiKey, messages, speakLatestMessage],
   );
+
+  // capture transcription
+  useEffect(() => {
+    // @ts-ignore
+    window.transcriptionCallback = function (transcription: string) {
+      if (transcription.includes('openaiapi:')) {
+        const newMessage = message + transcription.replace('openaiapi:', '').trim();
+        setMessage(newMessage);
+        setTranscribing(false);
+        setRecordingTime(kMaxAudio_s);
+
+        if (settings.isSendMessageRightAfterTranscribing) {
+          sendMessage(newMessage);
+        }
+
+        return;
+      }
+
+      const result = /\[0.*-->.*0\]/.exec(transcription);
+      if (result) {
+        setMessage(message + transcription.replace(result[0], '').trim());
+      }
+    };
+
+    // @ts-ignore
+    window.transcriptionEndCallback = function (message: string) {
+      const endOfTranscribing = message.includes('whisper_print_timings:') && message.includes('total time = ');
+
+      if (endOfTranscribing) {
+        setTranscribing(false);
+        setRecordingTime(kMaxAudio_s);
+      }
+    };
+  }, [message, sendMessage, settings.isSendMessageRightAfterTranscribing]);
 
   return (
     <div className="App">
@@ -426,9 +435,9 @@ function App() {
                 return transcribing ? 'Transcribing...' : 'Send';
               })()}
             </button>
-            <div className="tooltip" data-tip="Set API Key">
+            <div className="tooltip" data-tip="Settings">
               <button onClick={() => setApiKeyModalVisible(true)} className="btn btn-square btn-outline">
-                <Key />
+                <LucideSettings />
               </button>
             </div>
           </div>

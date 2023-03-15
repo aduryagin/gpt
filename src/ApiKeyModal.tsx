@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSettings } from './hooks';
 
 export const modalId = 'api-key-modal';
 
@@ -13,6 +14,8 @@ export default function ApiKeyModal({
   visible: boolean;
   apiKey: string;
 }) {
+  const settings = useSettings();
+
   const [key, setKey] = useState(apiKey);
   useEffect(() => {
     setKey(apiKey);
@@ -42,7 +45,7 @@ export default function ApiKeyModal({
       >
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div className="modal-box">
-          <h3 className="font-bold text-lg">OpenAI API Key</h3>
+          <h3 className="font-bold text-lg">Settings</h3>
           <div className="py-4">
             <div className="form-control w-full ">
               <input
@@ -59,6 +62,17 @@ export default function ApiKeyModal({
                     https://platform.openai.com/account/api-keys
                   </a>
                 </span>
+              </label>
+            </div>
+            <div className="form-control">
+              <label className="label cursor-pointer">
+                <span className="label-text">Send message right after transcribing is done</span>
+                <input
+                  type="checkbox"
+                  checked={settings.isSendMessageRightAfterTranscribing}
+                  onChange={(e) => settings.setSendMessageRightAfterTranscribing(Boolean(e.target.checked))}
+                  className="toggle toggle-md"
+                />
               </label>
             </div>
             <button
