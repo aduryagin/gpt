@@ -36,7 +36,6 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 
 /*
   todo:
-    - settings. send right after transcription is done
     - button to resend messages if something went wrong
     - system message setting
     - history
