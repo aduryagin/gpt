@@ -376,3 +376,7 @@ export function loadRemote({
     cbPrint('loadRemote: failed to open IndexedDB: abort');
   };
 }
+
+export function scrollToTheBottom() {
+  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: 'smooth' });
+}

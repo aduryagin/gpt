@@ -3,7 +3,7 @@ import './App.css';
 import { ChatCompletionRequestMessageRoleEnum } from 'openai';
 import PromptsModal, { modalId } from './PromptsModal';
 import Transcription from './Transcription';
-import { kMaxAudio_s, stopRecording } from './helpers';
+import { kMaxAudio_s, scrollToTheBottom, stopRecording } from './helpers';
 import ApiKeyModal from './ApiKeyModal';
 import { Key } from 'lucide-react';
 import Notification from './Notification';
@@ -36,9 +36,9 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 /*
   todo:
     - settings. send right after transcription is done
-    - scroll to bottom automatically
+    - button to resend messages if something went wrong
     - history
-    - save custom prompts to local storage
+    - save custom prompts to local storage / indexed db
 */
 
 function App() {
@@ -155,6 +155,9 @@ function App() {
       ];
       setMessages(newMessages);
       setIsAnswering(true);
+      setTimeout(() => {
+        scrollToTheBottom();
+      });
 
       try {
         const responseStream = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -217,6 +220,9 @@ function App() {
 
                 if (lastMessage.role === ChatCompletionRequestMessageRoleEnum.Assistant) {
                   const finalMessage = (lastMessage.content + messagePart).replace(/^[<br/>]{0,}/, '');
+
+                  // scroll to the bottom
+                  scrollToTheBottom();
 
                   return [
                     ...messages.slice(0, -1),
