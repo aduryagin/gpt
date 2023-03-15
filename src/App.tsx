@@ -36,8 +36,9 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 
 /*
   todo:
-    - button to resend messages if something went wrong
     - system message setting
+    - experiment with tts. use a queue to play sentences one by one
+    - button to resend messages if something went wrong
     - history
     - save custom prompts to local storage / indexed db
 */
@@ -100,19 +101,22 @@ function App() {
     [rate, voice],
   );
 
-  const speakLatestMessage = useCallback(() => {
-    const lastBubble = Array.from(document.querySelectorAll('.chat-bubble')).pop();
-    const latestMessage = lastBubble?.querySelector('span')?.textContent?.trim();
-    const latestMessageTime = Number(lastBubble?.getAttribute('data-date'));
-    // const latestMessage = messages[messages.length - 1];
-    console.log(latestMessage);
+  const speakLatestMessage = useCallback(
+    (bubble?: Element) => {
+      const lastBubble = bubble || Array.from(document.querySelectorAll('.chat-bubble')).pop();
+      const latestMessage = lastBubble?.querySelector('span')?.textContent?.trim();
+      const latestMessageTime = Number(lastBubble?.getAttribute('data-date'));
+      // const latestMessage = messages[messages.length - 1];
+      console.log(latestMessage);
 
-    speak({
-      role: ChatCompletionRequestMessageRoleEnum.Assistant,
-      content: latestMessage || '',
-      date: new Date(latestMessageTime),
-    });
-  }, [speak]);
+      speak({
+        role: ChatCompletionRequestMessageRoleEnum.Assistant,
+        content: latestMessage || '',
+        date: new Date(latestMessageTime),
+      });
+    },
+    [speak],
+  );
 
   const sendMessage = useCallback(
     async (message: string) => {
@@ -287,14 +291,15 @@ function App() {
                 <button
                   className={`btn-info btn btn-xs ml-2`}
                   style={{ lineHeight: 0 }}
-                  onClick={() => {
+                  onClick={(e) => {
                     if (speaking?.date.getTime() === message.date.getTime()) {
                       speechSynthesis.cancel();
                       setSpeaking(null);
                       return;
                     }
 
-                    speak(message);
+                    // @ts-ignore
+                    speakLatestMessage(e.target.parentElement);
                   }}
                 >
                   {speaking?.date.getTime() === message.date.getTime() ? 'speaking...' : 'speak'}
