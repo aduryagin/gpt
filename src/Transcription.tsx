@@ -78,7 +78,7 @@ export default function Transcription({
     startRecording({ setTranscribing, model: whisperModel.name, setNotificaitonMessage });
   }, [loadWhisperModel, ready, recording, setNotificaitonMessage, setRecording, setTranscribing, whisperModel.name]);
 
-  useHotkeys('r', () => {
+  useHotkeys('space', () => {
     transcribe();
   });
 
