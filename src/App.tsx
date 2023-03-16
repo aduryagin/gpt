@@ -53,6 +53,7 @@ function App() {
   }, []);
 
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [isRetry, setIsRetry] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
   const [rate, setRate] = useState(Number(localStorage.getItem('rate')) || 1);
   const [voice, setVoice] = useState(localStorage.getItem('voice') || 'Albert');
@@ -66,6 +67,13 @@ function App() {
   const [whisperModel, setWhisperModel] = useState<WhisperModel>(
     whisperModels.find((model) => model.name === localStorage.getItem('whisperModel')) || whisperModels[0],
   );
+
+  // catch notifications
+  useEffect(() => {
+    if (notificationMessage.includes('model is currently overloaded')) {
+      setIsRetry(true);
+    }
+  }, [notificationMessage]);
 
   // load voices
   useEffect(() => {
@@ -117,30 +125,9 @@ function App() {
     [speak],
   );
 
-  const sendMessage = useCallback(
-    async ({
-      message,
-      role = ChatCompletionRequestMessageRoleEnum.User,
-    }: {
-      message: string;
-      role?: ChatCompletionRequestMessageRoleEnum;
-    }) => {
-      if (!message) return;
-      setMessage('');
-
-      const newMessages: Message[] = [
-        ...messages,
-        {
-          role,
-          date: new Date(),
-          content: message,
-        },
-      ];
-      setMessages(newMessages);
+  const sendMessages = useCallback(
+    async (messages: { content: string; role: ChatCompletionRequestMessageRoleEnum }[]) => {
       setIsAnswering(true);
-      setTimeout(() => {
-        scrollToTheBottom();
-      });
 
       try {
         const responseStream = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -150,18 +137,7 @@ function App() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: [
-              ...messages.map((message) => ({
-                role: message.role,
-                content: message.content,
-              })),
-              // todo: check if this is correct
-              // .slice(-4 * 2), // keep last 4 messages from each side
-              {
-                content: message,
-                role,
-              },
-            ],
+            messages,
             model,
             // max_tokens: 100,
             stream: true,
@@ -234,7 +210,47 @@ function App() {
         console.log(error);
       }
     },
-    [apiKey, messages, speakLatestMessage],
+    [apiKey, speakLatestMessage],
+  );
+
+  const sendMessage = useCallback(
+    async ({
+      message,
+      role = ChatCompletionRequestMessageRoleEnum.User,
+    }: {
+      message: string;
+      role?: ChatCompletionRequestMessageRoleEnum;
+    }) => {
+      if (!message) return;
+      setMessage('');
+
+      const newMessages: Message[] = [
+        ...messages,
+        {
+          role,
+          date: new Date(),
+          content: message,
+        },
+      ];
+      setMessages(newMessages);
+      setTimeout(() => {
+        scrollToTheBottom();
+      });
+
+      sendMessages([
+        ...messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
+        // todo: check if this is correct
+        // .slice(-4 * 2), // keep last 4 messages from each side
+        {
+          content: message,
+          role,
+        },
+      ]);
+    },
+    [messages, sendMessages],
   );
 
   // capture transcription
@@ -451,17 +467,25 @@ function App() {
             </div>
             <button
               disabled={recording || transcribing}
-              className={`btn w-full shrink ${isAnswering ? 'btn-warning' : ''}`}
+              className={`btn w-full shrink ${isAnswering || isRetry ? 'btn-warning' : ''}`}
               onClick={() => {
+                if (isRetry) {
+                  sendMessages(messages);
+                  setIsRetry(false);
+                  return;
+                }
+
                 if (isAnswering) {
                   readableStream?.cancel();
                   setIsAnswering(false);
                   return;
                 }
+
                 sendMessage({ message });
               }}
             >
               {(() => {
+                if (isRetry) return 'Retry';
                 if (isAnswering) return 'Stop answering';
                 if (recording) return `Recording ${recordingTime}s`;
                 return transcribing ? 'Transcribing...' : 'Send';
