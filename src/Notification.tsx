@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 
 const Notification = memo(function Notification({
   message,
@@ -7,22 +7,15 @@ const Notification = memo(function Notification({
   message: string;
   setNotificationMessage: (value: string) => void;
 }) {
-  useEffect(() => {
-    if (message) {
-      setTimeout(() => {
-        setNotificationMessage('');
-      }, 5000);
-    } else {
-      setNotificationMessage('');
-    }
-  }, [message, setNotificationMessage]);
-
   if (!message) return null;
 
   return (
     <div className="toast toast-end">
       <div className="alert alert-error">
         <div>
+          <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={() => setNotificationMessage('')}>
+            ✕
+          </button>
           <span>{message}</span>
         </div>
       </div>
