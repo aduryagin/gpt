@@ -288,13 +288,22 @@ function App() {
                 </div>
             </div> */}
               <div className="chat-header">
-                {message.role === ChatCompletionRequestMessageRoleEnum.Assistant ? model : 'You'}
+                {message.role === ChatCompletionRequestMessageRoleEnum.Assistant
+                  ? model
+                  : `You ${message.role === ChatCompletionRequestMessageRoleEnum.System ? '(System message)' : ''}`}
                 {/* <time className="text-xs opacity-50">{message.date.toLocaleTimeString()}</time> */}
               </div>
-              <div className="chat-bubble" data-date={message.date.getTime()}>
+              <div
+                className={`chat-bubble ${
+                  message.role !== ChatCompletionRequestMessageRoleEnum.Assistant ? 'chat-bubble-info' : ''
+                }`}
+                data-date={message.date.getTime()}
+              >
                 <span dangerouslySetInnerHTML={{ __html: message.content }} />
                 <button
-                  className={`btn-info btn btn-xs ml-2`}
+                  className={` btn btn-xs ml-2 ${
+                    message.role === ChatCompletionRequestMessageRoleEnum.System ? '' : 'btn-info'
+                  }`}
                   style={{ lineHeight: 0 }}
                   onClick={(e) => {
                     if (speaking?.date.getTime() === message.date.getTime()) {
