@@ -5,7 +5,7 @@ import PromptsModal, { modalId } from './PromptsModal';
 import Transcription from './Transcription';
 import { kMaxAudio_s, scrollToTheBottom, stopRecording } from './helpers';
 import ApiKeyModal from './ApiKeyModal';
-import { LucideSettings } from 'lucide-react';
+import { Bot, LucideSettings } from 'lucide-react';
 import Notification from './Notification';
 import StartNewConversation from './StartNewConversation';
 import { useSettings } from './hooks';
@@ -36,7 +36,6 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 
 /*
   todo:
-    - system message setting
     - experiment with tts. use a queue to play sentences one by one
     - button to resend messages if something went wrong
     - history
@@ -119,14 +118,20 @@ function App() {
   );
 
   const sendMessage = useCallback(
-    async (message: string) => {
+    async ({
+      message,
+      role = ChatCompletionRequestMessageRoleEnum.User,
+    }: {
+      message: string;
+      role?: ChatCompletionRequestMessageRoleEnum;
+    }) => {
       if (!message) return;
       setMessage('');
 
       const newMessages: Message[] = [
         ...messages,
         {
-          role: ChatCompletionRequestMessageRoleEnum.User,
+          role,
           date: new Date(),
           content: message,
         },
@@ -243,7 +248,7 @@ function App() {
         setRecordingTime(kMaxAudio_s);
 
         if (settings.isSendMessageRightAfterTranscribing) {
-          sendMessage(newMessage);
+          sendMessage({ message: newMessage });
         }
 
         return;
@@ -421,6 +426,20 @@ function App() {
               }}
             />
             <StartNewConversation setMessages={setMessages} />
+            <div className="tooltip" data-tip="Send system message">
+              <button
+                disabled={recording || transcribing || isAnswering}
+                onClick={() => {
+                  sendMessage({
+                    message,
+                    role: ChatCompletionRequestMessageRoleEnum.System,
+                  });
+                }}
+                className="btn btn-square btn-outline"
+              >
+                <Bot />
+              </button>
+            </div>
             <button
               disabled={recording || transcribing}
               className={`btn w-full shrink ${isAnswering ? 'btn-warning' : ''}`}
@@ -430,7 +449,7 @@ function App() {
                   setIsAnswering(false);
                   return;
                 }
-                sendMessage(message);
+                sendMessage({ message });
               }}
             >
               {(() => {
