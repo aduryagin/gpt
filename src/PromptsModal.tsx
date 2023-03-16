@@ -16,7 +16,7 @@ export default function PromptsModal({ setMessage }: Props) {
       <label htmlFor={modalId} className="modal">
         {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <label className="modal-box w-11/12 max-w-5xl" htmlFor="">
-          <label htmlFor={modalId} className="btn btn-sm btn-circle absolute right-2 top-2">
+          <label htmlFor={modalId} style={{ left: '100%' }} className="btn btn-sm btn-circle right-0 top-0 sticky">
             ✕
           </label>
           <div>
