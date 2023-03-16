@@ -28,9 +28,9 @@ export function stopRecording() {
 export function startRecording({
   setTranscribing,
   model,
-  setNotificaitonMessage,
+  setNotificationMessage,
 }: {
-  setNotificaitonMessage: (message: string) => void;
+  setNotificationMessage: (message: string) => void;
   model: string;
   setTranscribing: (transcribing: boolean) => void;
 }) {
@@ -60,7 +60,7 @@ export function startRecording({
 
         if (model.includes('openai')) {
           audioMp3 = new File([new Blob(chunks)], 'input.wav', { type: 'audio/wav' });
-          transcribe({ setTranscribing, model, setNotificaitonMessage });
+          transcribe({ setTranscribing, model, setNotificationMessage });
           return;
         }
 
@@ -94,7 +94,7 @@ export function startRecording({
                   console.log('js: truncated audio to first ' + kMaxAudio_s + ' seconds');
                 }
 
-                transcribe({ setTranscribing, model, setNotificaitonMessage });
+                transcribe({ setTranscribing, model, setNotificationMessage });
               });
             },
             function (e: Error) {
@@ -110,7 +110,7 @@ export function startRecording({
       mediaRecorder.start();
     })
     .catch(function (err) {
-      setNotificaitonMessage(err.message);
+      setNotificationMessage(err.message);
       console.log('js: error getting audio stream: ' + err);
     });
 }
@@ -118,9 +118,9 @@ export function startRecording({
 export function transcribe({
   model,
   setTranscribing,
-  setNotificaitonMessage,
+  setNotificationMessage,
 }: {
-  setNotificaitonMessage: (message: string) => void;
+  setNotificationMessage: (message: string) => void;
   model: string;
   setTranscribing: (transcribing: boolean) => void;
 }) {
@@ -147,7 +147,7 @@ export function transcribe({
         window.transcriptionCallback(`openaiapi:${data}`);
       })
       .catch((error) => {
-        setNotificaitonMessage(error.message);
+        setNotificationMessage(error.message);
         console.log(error);
       });
 
