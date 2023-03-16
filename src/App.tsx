@@ -470,7 +470,12 @@ function App() {
               className={`btn w-full shrink ${isAnswering || isRetry ? 'btn-warning' : ''}`}
               onClick={() => {
                 if (isRetry) {
-                  sendMessages(messages);
+                  sendMessages(
+                    messages.map((item) => ({
+                      content: item.content,
+                      role: item.role,
+                    })),
+                  );
                   setIsRetry(false);
                   return;
                 }
