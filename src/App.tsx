@@ -302,7 +302,7 @@ function App() {
                 <span dangerouslySetInnerHTML={{ __html: message.content }} />
                 <button
                   className={` btn btn-xs ml-2 ${
-                    message.role === ChatCompletionRequestMessageRoleEnum.System ? '' : 'btn-info'
+                    message.role !== ChatCompletionRequestMessageRoleEnum.Assistant ? '' : 'btn-info'
                   }`}
                   style={{ lineHeight: 0 }}
                   onClick={(e) => {
