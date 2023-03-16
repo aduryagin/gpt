@@ -336,7 +336,7 @@ function App() {
                 </button>
               </div>
               {index === messages.length - 1 && isAnswering && (
-                <div className="chat-footer opacity-50">Answering...</div>
+                <div className="chat-footer opacity-50">Responding...</div>
               )}
             </div>
           ))}
@@ -491,7 +491,7 @@ function App() {
             >
               {(() => {
                 if (isRetry) return 'Retry';
-                if (isAnswering) return 'Stop answering';
+                if (isAnswering) return 'Stop responding';
                 if (recording) return `Recording ${recordingTime}s`;
                 return transcribing ? 'Transcribing...' : 'Send';
               })()}
