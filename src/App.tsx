@@ -359,7 +359,7 @@ function App() {
           </div>
           <div className="w-1/3">
             <label htmlFor="rate" className="label">
-              <span className="label-text">Speech rate</span>
+              <span className="label-text">Speech rate ({rate})</span>
             </label>
             <div style={{ height: 48 }} className="flex items-start">
               <input
