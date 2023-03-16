@@ -36,8 +36,8 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 
 /*
   todo:
-    - experiment with tts. use a queue to play sentences one by one
     - button to resend messages if something went wrong
+    - experiment with tts. use a queue to play sentences one by one
     - history
     - save custom prompts to local storage / indexed db
 */
@@ -52,7 +52,7 @@ function App() {
     setApiKeyModalVisible(false);
   }, []);
 
-  const [notificationMessage, setNotificaitonMessage] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
   const [isAnswering, setIsAnswering] = useState(false);
   const [rate, setRate] = useState(Number(localStorage.getItem('rate')) || 1);
   const [voice, setVoice] = useState(localStorage.getItem('voice') || 'Albert');
@@ -167,13 +167,13 @@ function App() {
             stream: true,
           }),
         }).catch((error: Error) => {
-          setNotificaitonMessage(error.message);
+          setNotificationMessage(error.message);
         });
 
         // handle error message for the request
         if (!responseStream?.ok) {
           const error = await responseStream?.json();
-          setNotificaitonMessage(error?.error.message);
+          setNotificationMessage(error?.error.message);
           setIsAnswering(false);
           return;
         }
@@ -230,7 +230,7 @@ function App() {
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
-        setNotificaitonMessage(error.message);
+        setNotificationMessage(error.message);
         console.log(error);
       }
     },
@@ -407,7 +407,7 @@ function App() {
           />
           <div className="flex gap-2 w-full mb-2">
             <Transcription
-              setNotificaitonMessage={setNotificaitonMessage}
+              setNotificationMessage={setNotificationMessage}
               whisperModel={whisperModel}
               transcribing={transcribing}
               setTranscribing={setTranscribing}
@@ -482,7 +482,7 @@ function App() {
         apiKey={apiKey}
         saveApiKey={saveApiKey}
       />
-      <Notification message={notificationMessage} setNotificationMessage={setNotificaitonMessage} />
+      <Notification message={notificationMessage} setNotificationMessage={setNotificationMessage} />
     </div>
   );
 }
