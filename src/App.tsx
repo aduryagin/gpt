@@ -159,7 +159,7 @@ function App() {
               // .slice(-4 * 2), // keep last 4 messages from each side
               {
                 content: message,
-                role: ChatCompletionRequestMessageRoleEnum.User,
+                role,
               },
             ],
             model,
