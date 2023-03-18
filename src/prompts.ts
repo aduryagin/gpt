@@ -10,6 +10,9 @@ function speakingPrompt(fixGrammar = true) {
   }`;
 }
 
+// games. guess a word
+// https://learnenglish.britishcouncil.org/skills/speaking/b2-speaking
+
 export const prompts = [
   {
     topic: 'Speaking and Listening',
