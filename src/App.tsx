@@ -9,6 +9,7 @@ import { Bot, LucideSettings } from 'lucide-react';
 import Notification from './Notification';
 import StartNewConversation from './StartNewConversation';
 import { useSettings } from './hooks';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export type WhisperModel = { size: number; name: string; description: string };
 export type Message = { role: ChatCompletionRequestMessageRoleEnum; date: Date; content: string };
@@ -36,8 +37,6 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 
 /*
   todo:
-    - button to resend messages if something went wrong
-    - experiment with tts. use a queue to play sentences one by one
     - history
     - save custom prompts to local storage / indexed db
 */
@@ -253,6 +252,14 @@ function App() {
     [messages, sendMessages],
   );
 
+  useHotkeys(
+    'enter',
+    () => {
+      sendMessage({ message });
+    },
+    { enableOnFormTags: ['TEXTAREA'] },
+  );
+
   // capture transcription
   useEffect(() => {
     // @ts-ignore
@@ -341,8 +348,8 @@ function App() {
             </div>
           ))}
         </div>
-        <div className="flex gap-5 mb-5 mt-5 items-center">
-          <div className="w-1/3">
+        <div className="sm:flex gap-5 mb-5 mt-5 items-center">
+          <div className="sm:w-1/3">
             <label htmlFor="voices" className="label">
               <span className="label-text">Voice</span>
             </label>
@@ -362,7 +369,7 @@ function App() {
               ))}
             </select>
           </div>
-          <div className="w-1/3">
+          <div className="sm:w-1/3">
             <label htmlFor="whisper-model" className="label">
               <span className="label-text">Transcription model</span>
             </label>
@@ -382,11 +389,11 @@ function App() {
               ))}
             </select>
           </div>
-          <div className="w-1/3">
+          <div className="sm:w-1/3">
             <label htmlFor="rate" className="label">
               <span className="label-text">Speech rate ({rate})</span>
             </label>
-            <div style={{ height: 48 }} className="flex items-start">
+            <div className="flex items-start sm:h-12">
               <input
                 id="rate"
                 type="range"
@@ -421,53 +428,10 @@ function App() {
             onChange={(e) => setMessage(e.target.value)}
             value={message}
           />
-          <div className="flex gap-2 w-full mb-2">
-            <Transcription
-              setNotificationMessage={setNotificationMessage}
-              whisperModel={whisperModel}
-              transcribing={transcribing}
-              setTranscribing={setTranscribing}
-              recording={recording}
-              setRecording={(recording) => {
-                if (recording) {
-                  recordingInterval = setInterval(() => {
-                    setRecordingTime((time) => {
-                      if (time === 1) {
-                        clearInterval(recordingInterval);
-                        stopRecording();
-                        setRecording(false);
-
-                        return kMaxAudio_s;
-                      }
-
-                      return time - 1;
-                    });
-                  }, 1000);
-                } else {
-                  clearInterval(recordingInterval);
-                }
-
-                setRecording(recording);
-              }}
-            />
-            <StartNewConversation setMessages={setMessages} />
-            <div className="tooltip" data-tip="Send system message">
-              <button
-                disabled={recording || transcribing || isAnswering}
-                onClick={() => {
-                  sendMessage({
-                    message,
-                    role: ChatCompletionRequestMessageRoleEnum.System,
-                  });
-                }}
-                className="btn btn-square btn-outline"
-              >
-                <Bot />
-              </button>
-            </div>
+          <div className="sm:flex gap-2 w-full mb-2">
             <button
               disabled={recording || transcribing}
-              className={`btn w-full shrink ${isAnswering || isRetry ? 'btn-warning' : ''}`}
+              className={`btn w-full mb-2 shrink ${isAnswering || isRetry ? 'btn-warning' : ''}`}
               onClick={() => {
                 if (isRetry) {
                   sendMessages(
@@ -496,10 +460,55 @@ function App() {
                 return transcribing ? 'Transcribing...' : 'Send';
               })()}
             </button>
-            <div className="tooltip" data-tip="Settings">
-              <button onClick={() => setApiKeyModalVisible(true)} className="btn btn-square btn-outline">
-                <LucideSettings />
-              </button>
+            <div className="flex gap-2">
+              <Transcription
+                setNotificationMessage={setNotificationMessage}
+                whisperModel={whisperModel}
+                transcribing={transcribing}
+                setTranscribing={setTranscribing}
+                recording={recording}
+                setRecording={(recording) => {
+                  if (recording) {
+                    recordingInterval = setInterval(() => {
+                      setRecordingTime((time) => {
+                        if (time === 1) {
+                          clearInterval(recordingInterval);
+                          stopRecording();
+                          setRecording(false);
+
+                          return kMaxAudio_s;
+                        }
+
+                        return time - 1;
+                      });
+                    }, 1000);
+                  } else {
+                    clearInterval(recordingInterval);
+                  }
+
+                  setRecording(recording);
+                }}
+              />
+              <StartNewConversation setMessages={setMessages} />
+              <div className="tooltip" data-tip="Settings">
+                <button onClick={() => setApiKeyModalVisible(true)} className="btn btn-square btn-outline">
+                  <LucideSettings />
+                </button>
+              </div>
+              <div className="tooltip" data-tip="Send system message">
+                <button
+                  disabled={recording || transcribing || isAnswering}
+                  onClick={() => {
+                    sendMessage({
+                      message,
+                      role: ChatCompletionRequestMessageRoleEnum.System,
+                    });
+                  }}
+                  className="btn btn-square btn-outline"
+                >
+                  <Bot />
+                </button>
+              </div>
             </div>
           </div>
         </div>
