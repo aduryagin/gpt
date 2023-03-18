@@ -22,12 +22,12 @@ const whisperModels: WhisperModel[] = [
     size: 0,
   },
   // {
-  //   name: './ggml-model-whisper-base.bin',
+  //   name: 'https://whisper.ggerganov.com/ggml-model-whisper-base.bin',
   //   size: 148,
   //   description: 'Base (offline, slower, more accurate)',
   // },
   // {
-  //   name: './ggml-model-whisper-tiny.bin',
+  //   name: 'https://whisper.ggerganov.com/ggml-model-whisper-tiny.bin',
   //   description: 'Tiny (offline, faster, less accurate)',
   //   size: 78,
   // },
@@ -296,7 +296,7 @@ function App() {
 
   return (
     <div className="App">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         <div className="messages">
           {messages.map((message, index) => (
             <div
