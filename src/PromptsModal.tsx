@@ -20,8 +20,15 @@ export default function PromptsModal({ setMessage }: Props) {
             ✕
           </label>
           <div>
+            <select onChange={(e) => setTab(e.target.value)} className="sm:hidden select select-bordered w-full mb-3">
+              {prompts.map((group) => (
+                <option key={group.topic} value={group.topic}>
+                  {group.topic}
+                </option>
+              ))}
+            </select>
             <div className="grid grid-cols-8 gap-4">
-              <div className="col-span-2">
+              <div className="col-span-2 hidden sm:block">
                 <ul className="menu bg-base-100 sticky top-0">
                   <li className="menu-title">
                     <span>English</span>
@@ -36,16 +43,9 @@ export default function PromptsModal({ setMessage }: Props) {
                       </button>
                     </li>
                   ))}
-
-                  {/* <li className="menu-title">
-                    <span>Other</span>
-                  </li>
-                  <li>
-                    <a>Other</a>
-                  </li> */}
                 </ul>
               </div>
-              <div className="col-span-6">
+              <div className="col-span-8 sm:col-span-6">
                 {prompts
                   .find((item) => item.topic === tab)
                   ?.list.map((prompt: any) => {
