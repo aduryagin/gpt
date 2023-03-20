@@ -38,7 +38,7 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 /*
   todo:
     - history
-    - save custom prompts to local storage / indexed db
+    - if it's not responding and last message is mine - show a button to resend all messages.
 */
 
 function App() {

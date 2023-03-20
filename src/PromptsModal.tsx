@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { db } from './db';
 import { prompts } from './prompts';
 
@@ -27,6 +27,14 @@ export default function PromptsModal({ setMessage }: Props) {
     setText('');
     setTab(result as number);
   }, [text, title]);
+
+  const promptDB = promptsDB?.find((item) => item.id === Number(tab));
+  useEffect(() => {
+    setTitle(promptDB?.title || '');
+  }, [promptDB?.title]);
+  useEffect(() => {
+    setText(promptDB?.text || '');
+  }, [promptDB?.text]);
 
   return (
     <>
@@ -101,91 +109,83 @@ export default function PromptsModal({ setMessage }: Props) {
                 </ul>
               </div>
               <div className="col-span-8 sm:col-span-6">
-                {(() => {
-                  const promptDB = promptsDB?.find((item) => item.id === Number(tab));
+                {tab === 'new-prompt' || promptDB ? (
+                  <>
+                    <input
+                      onChange={(e) => {
+                        setTitle(e.target.value);
 
-                  if (tab === 'new-prompt' || promptDB) {
-                    return (
-                      <>
-                        <input
-                          onChange={(e) => {
-                            setTitle(e.target.value);
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        if (promptDB) db.prompts.update(promptDB.id!, { title: e.target.value });
+                      }}
+                      value={title}
+                      className="input input-bordered w-full mb-2"
+                      placeholder="Title..."
+                    />
+                    <textarea
+                      onChange={(e) => {
+                        setText(e.target.value);
 
-                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                            if (promptDB) db.prompts.update(promptDB.id!, { title: e.target.value });
-                          }}
-                          value={promptDB?.title || title}
-                          className="input input-bordered w-full mb-2"
-                          placeholder="Title..."
-                        />
-                        <textarea
-                          onChange={(e) => {
-                            setText(e.target.value);
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        if (promptDB) db.prompts.update(promptDB.id!, { text: e.target.value });
+                      }}
+                      value={text}
+                      className="textarea textarea-bordered w-full"
+                      placeholder="Prompt..."
+                    />
+                    <button
+                      className={`btn w-full ${promptDB ? 'mb-2' : ''}`}
+                      onClick={() => {
+                        if (promptDB) {
+                          // @ts-ignore
+                          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                          document.querySelector(`#${modalId}`)!.checked = false;
+                          setMessage(promptDB.text);
+                          return;
+                        }
 
-                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                            if (promptDB) db.prompts.update(promptDB.id!, { text: e.target.value });
-                          }}
-                          value={promptDB?.text || text}
-                          className="textarea textarea-bordered w-full"
-                          placeholder="Prompt..."
-                        />
-                        <button
-                          className={`btn w-full ${promptDB ? 'mb-2' : ''}`}
-                          onClick={() => {
-                            if (promptDB) {
-                              // @ts-ignore
-                              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                              document.querySelector(`#${modalId}`)!.checked = false;
-                              setMessage(promptDB.text);
-                              return;
-                            }
+                        addPrompt();
+                      }}
+                    >
+                      {promptDB ? 'Use' : 'Add'}
+                    </button>
+                    {promptDB && (
+                      <button
+                        className="btn btn-error w-full"
+                        onClick={() => {
+                          setTab('new-prompt');
+                          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                          db.prompts.delete(promptDB.id!);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  prompts
+                    .find((item) => item.topic === tab)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ?.list.map((prompt: any) => {
+                      const title = typeof prompt === 'string' ? '' : prompt.title;
+                      const text = typeof prompt === 'string' ? prompt : prompt.text;
 
-                            addPrompt();
-                          }}
-                        >
-                          {promptDB ? 'Use' : 'Add'}
-                        </button>
-                        {promptDB && (
-                          <button
-                            className="btn btn-error w-full"
-                            onClick={() => {
-                              setTab('new-prompt');
-                              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                              db.prompts.delete(promptDB.id!);
-                            }}
+                      return (
+                        // eslint-disable-next-line react/jsx-key
+                        <label key={text} htmlFor={modalId}>
+                          {title && <b>{title}</b>}
+                          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+                          <div
+                            className="textarea textarea-bordered mb-2 hover:bg-slate-100"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setMessage(text)}
                           >
-                            Delete
-                          </button>
-                        )}
-                      </>
-                    );
-                  }
-
-                  return (
-                    prompts
-                      .find((item) => item.topic === tab)
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      ?.list.map((prompt: any) => {
-                        const title = typeof prompt === 'string' ? '' : prompt.title;
-                        const text = typeof prompt === 'string' ? prompt : prompt.text;
-
-                        return (
-                          // eslint-disable-next-line react/jsx-key
-                          <label key={text} htmlFor={modalId}>
-                            {title && <b>{title}</b>}
-                            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-                            <div
-                              className="textarea textarea-bordered mb-2 hover:bg-slate-100"
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => setMessage(text)}
-                            >
-                              {text}
-                            </div>
-                          </label>
-                        );
-                      })
-                  );
-                })()}
+                            {text}
+                          </div>
+                        </label>
+                      );
+                    })
+                )}
               </div>
             </div>
           </div>
