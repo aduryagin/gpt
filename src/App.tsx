@@ -4,7 +4,7 @@ import { ChatCompletionRequestMessageRoleEnum } from 'openai';
 import PromptsModal, { modalId } from './PromptsModal';
 import Transcription from './Transcription';
 import { kMaxAudio_s, scrollToTheBottom, stopRecording } from './helpers';
-import ApiKeyModal from './ApiKeyModal';
+import SettingsModal from './SettingsModal';
 import { Bot, LucideSettings } from 'lucide-react';
 import Notification from './Notification';
 import StartNewConversation from './StartNewConversation';
@@ -38,17 +38,16 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 /*
   todo:
     - history
-    - if it's not responding and last message is mine - show a button to resend all messages.
 */
 
 function App() {
   const settings = useSettings();
   const [apiKey, setApiKey] = useState(localStorage.getItem('apiKey') || '');
-  const [apiKeyModalVisible, setApiKeyModalVisible] = useState(!apiKey);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(!apiKey);
   const saveApiKey = useCallback((value: string) => {
     setApiKey(value);
     localStorage.setItem('apiKey', value);
-    setApiKeyModalVisible(false);
+    setSettingsModalVisible(false);
   }, []);
 
   const [notificationMessage, setNotificationMessage] = useState('');
@@ -162,7 +161,7 @@ function App() {
           const string = res?.value.substring(6) as string;
 
           if (string?.includes('[DONE]')) {
-            speakLatestMessage();
+            if (settings.isAutomaticallyTextToSpeech) speakLatestMessage();
             setIsAnswering(false);
             break;
           }
@@ -209,7 +208,7 @@ function App() {
         console.log(error);
       }
     },
-    [apiKey, speakLatestMessage],
+    [apiKey, settings.isAutomaticallyTextToSpeech, speakLatestMessage],
   );
 
   const sendMessage = useCallback(
@@ -491,7 +490,7 @@ function App() {
               />
               <StartNewConversation setMessages={setMessages} />
               <div className="tooltip" data-tip="Settings">
-                <button onClick={() => setApiKeyModalVisible(true)} className="btn btn-square btn-outline">
+                <button onClick={() => setSettingsModalVisible(true)} className="btn btn-square btn-outline">
                   <LucideSettings />
                 </button>
               </div>
@@ -514,9 +513,9 @@ function App() {
         </div>
       </div>
       <PromptsModal setMessage={setMessage} />
-      <ApiKeyModal
-        setVisible={(visible: boolean) => setApiKeyModalVisible(visible)}
-        visible={apiKeyModalVisible}
+      <SettingsModal
+        setVisible={(visible: boolean) => setSettingsModalVisible(visible)}
+        visible={settingsModalVisible}
         apiKey={apiKey}
         saveApiKey={saveApiKey}
       />

@@ -3,7 +3,7 @@ import { useSettings } from './hooks';
 
 export const modalId = 'api-key-modal';
 
-export default function ApiKeyModal({
+export default function SettingsModal({
   visible,
   saveApiKey,
   apiKey,
@@ -71,6 +71,17 @@ export default function ApiKeyModal({
                   type="checkbox"
                   checked={settings.isSendMessageRightAfterTranscribing}
                   onChange={(e) => settings.setSendMessageRightAfterTranscribing(Boolean(e.target.checked))}
+                  className="toggle toggle-md"
+                />
+              </label>
+            </div>
+            <div className="form-control">
+              <label className="label cursor-pointer">
+                <span className="label-text">Speak bot messages automatically</span>
+                <input
+                  type="checkbox"
+                  checked={settings.isAutomaticallyTextToSpeech}
+                  onChange={(e) => settings.setAutomaticallyTextToSpeech(Boolean(e.target.checked))}
                   className="toggle toggle-md"
                 />
               </label>
