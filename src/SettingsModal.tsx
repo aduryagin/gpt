@@ -1,7 +1,24 @@
 import { useEffect, useState } from 'react';
-import { useSettings } from './hooks';
+import { useSettings, WhisperModel } from './hooks';
 
 export const modalId = 'api-key-modal';
+export const whisperModels: WhisperModel[] = [
+  {
+    name: 'openai whisper api',
+    description: 'OpenAI Whisper API',
+    size: 0,
+  },
+  // {
+  //   name: 'https://whisper.ggerganov.com/ggml-model-whisper-base.bin',
+  //   size: 148,
+  //   description: 'Base (offline, slower, more accurate)',
+  // },
+  // {
+  //   name: 'https://whisper.ggerganov.com/ggml-model-whisper-tiny.bin',
+  //   description: 'Tiny (offline, faster, less accurate)',
+  //   size: 78,
+  // },
+];
 
 export default function SettingsModal({
   visible,
@@ -63,6 +80,28 @@ export default function SettingsModal({
                   </a>
                 </span>
               </label>
+            </div>
+            <div className="form-control">
+              <label htmlFor="whisper-model" className="label">
+                <span className="label-text">Transcription model</span>
+              </label>
+              <select
+                className="select select-bordered w-full"
+                value={settings.whisperModel.name}
+                onChange={(e) => {
+                  settings.setWhisperModel(
+                    whisperModels.find((item) => item.name === e.target.value) || whisperModels[0],
+                  );
+                  localStorage.setItem('whisperModel', e.target.value);
+                }}
+                id="whisper-model"
+              >
+                {whisperModels.map((model) => (
+                  <option value={model.name} key={model.name}>
+                    {model.description}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-control">
               <label className="label cursor-pointer">

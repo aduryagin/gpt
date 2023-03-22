@@ -1,8 +1,8 @@
 import { Mic } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { WhisperModel } from './App';
 import { model, loadRemote, startRecording, stopRecording } from './helpers';
+import { useSettings } from './hooks';
 
 // @ts-ignore
 const Module = window.Module;
@@ -12,31 +12,30 @@ export default function Transcription({
   setRecording,
   transcribing,
   setTranscribing,
-  whisperModel,
   setNotificationMessage,
 }: {
   setNotificationMessage: (value: string) => void;
-  whisperModel: WhisperModel;
   transcribing: boolean;
   setTranscribing: (transcribing: boolean) => void;
   recording: boolean;
   setRecording: (recording: boolean) => void;
 }) {
+  const settings = useSettings();
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
 
   const loadWhisperModel = useCallback(() => {
     setReady(false);
 
-    if (whisperModel.name.includes('openai')) {
+    if (settings.whisperModel.name.includes('openai')) {
       setReady(true);
       return;
     }
 
     loadRemote({
-      url: whisperModel.name,
+      url: settings.whisperModel.name,
       dst: model,
-      size_mb: whisperModel.size,
+      size_mb: settings.whisperModel.size,
       cbProgress: setProgress,
       cbCancel() {
         console.log('cancelled');
@@ -55,7 +54,7 @@ export default function Transcription({
         setReady(true);
       },
     });
-  }, [whisperModel]);
+  }, [settings.whisperModel.name, settings.whisperModel.size]);
 
   useEffect(() => {
     loadWhisperModel();
@@ -75,8 +74,16 @@ export default function Transcription({
 
     setRecording(true);
 
-    startRecording({ setTranscribing, model: whisperModel.name, setNotificationMessage });
-  }, [loadWhisperModel, ready, recording, setNotificationMessage, setRecording, setTranscribing, whisperModel.name]);
+    startRecording({ setTranscribing, model: settings.whisperModel.name, setNotificationMessage });
+  }, [
+    loadWhisperModel,
+    ready,
+    recording,
+    setNotificationMessage,
+    setRecording,
+    setTranscribing,
+    settings.whisperModel.name,
+  ]);
 
   useHotkeys('space', () => {
     transcribe();

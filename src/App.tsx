@@ -11,27 +11,10 @@ import StartNewConversation from './StartNewConversation';
 import { useSettings } from './hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-export type WhisperModel = { size: number; name: string; description: string };
 export type Message = { role: ChatCompletionRequestMessageRoleEnum; date: Date; content: string };
 
 const model = 'gpt-3.5-turbo';
-const whisperModels: WhisperModel[] = [
-  {
-    name: 'openai whisper api',
-    description: 'OpenAI Whisper API',
-    size: 0,
-  },
-  // {
-  //   name: 'https://whisper.ggerganov.com/ggml-model-whisper-base.bin',
-  //   size: 148,
-  //   description: 'Base (offline, slower, more accurate)',
-  // },
-  // {
-  //   name: 'https://whisper.ggerganov.com/ggml-model-whisper-tiny.bin',
-  //   description: 'Tiny (offline, faster, less accurate)',
-  //   size: 78,
-  // },
-];
+
 let recordingInterval = 0;
 let readableStream: ReadableStreamDefaultReader<string> | undefined;
 
@@ -62,9 +45,6 @@ function App() {
   const [recording, setRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(kMaxAudio_s);
   const [transcribing, setTranscribing] = useState(false);
-  const [whisperModel, setWhisperModel] = useState<WhisperModel>(
-    whisperModels.find((model) => model.name === localStorage.getItem('whisperModel')) || whisperModels[0],
-  );
 
   // catch notifications
   useEffect(() => {
@@ -369,26 +349,6 @@ function App() {
             </select>
           </div>
           <div className="sm:w-1/3">
-            <label htmlFor="whisper-model" className="label">
-              <span className="label-text">Transcription model</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={whisperModel.name}
-              onChange={(e) => {
-                setWhisperModel(whisperModels.find((item) => item.name === e.target.value) || whisperModels[0]);
-                localStorage.setItem('whisperModel', e.target.value);
-              }}
-              id="whisper-model"
-            >
-              {whisperModels.map((model) => (
-                <option value={model.name} key={model.name}>
-                  {model.description}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:w-1/3">
             <label htmlFor="rate" className="label">
               <span className="label-text">Speech rate ({rate})</span>
             </label>
@@ -462,7 +422,6 @@ function App() {
             <div className="flex gap-2">
               <Transcription
                 setNotificationMessage={setNotificationMessage}
-                whisperModel={whisperModel}
                 transcribing={transcribing}
                 setTranscribing={setTranscribing}
                 recording={recording}
