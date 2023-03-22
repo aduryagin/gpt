@@ -20,24 +20,27 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;
 }
 
+function useBooleanSetting(name: string) {
+  const [isBoolean, setBoolean] = useState<boolean>(Boolean(localStorage.getItem(name)) || true);
+  const setBooleanHandler = useCallback(
+    (value: boolean) => {
+      setBoolean(value);
+      localStorage.setItem(name, value ? 'true' : '');
+    },
+    [name],
+  );
+
+  return { isBoolean, setBoolean: setBooleanHandler };
+}
+
 function useSettingsContext() {
   // automatically text to speech
-  const [isAutomaticallyTextToSpeech, setAutomaticallyTextToSpeech] = useState<boolean>(
-    Boolean(localStorage.getItem('isAutomaticallyTextToSpeech')) || true,
-  );
-  const setAutomaticallyTextToSpeechHandler = useCallback((value: boolean) => {
-    setAutomaticallyTextToSpeech(value);
-    localStorage.setItem('isAutomaticallyTextToSpeech', value ? 'true' : '');
-  }, []);
+  const { isBoolean: isAutomaticallyTextToSpeech, setBoolean: setAutomaticallyTextToSpeechHandler } =
+    useBooleanSetting('isAutomaticallyTextToSpeech');
 
   // send message right after transcribing
-  const [isSendMessageRightAfterTranscribing, setSendMessageRightAfterTranscribing] = useState(
-    Boolean(localStorage.getItem('isSendMessageRightAfterTranscribing')),
-  );
-  const setSendMessageRightAfterTranscribingHandler = useCallback((value: boolean) => {
-    setSendMessageRightAfterTranscribing(value);
-    localStorage.setItem('isSendMessageRightAfterTranscribing', value ? 'true' : '');
-  }, []);
+  const { isBoolean: isSendMessageRightAfterTranscribing, setBoolean: setSendMessageRightAfterTranscribingHandler } =
+    useBooleanSetting('isSendMessageRightAfterTranscribing');
 
   return {
     isAutomaticallyTextToSpeech,
