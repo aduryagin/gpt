@@ -123,6 +123,7 @@ export default function PromptsModal({ setMessage }: Props) {
                       placeholder="Title..."
                     />
                     <textarea
+                      rows={10}
                       onChange={(e) => {
                         setText(e.target.value);
 
