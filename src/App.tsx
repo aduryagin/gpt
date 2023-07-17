@@ -21,6 +21,7 @@ let readableStream: ReadableStreamDefaultReader<string> | undefined;
 /*
   todo:
     - history
+    - markdown: textareas, messages
 */
 
 function App() {
@@ -146,8 +147,11 @@ function App() {
             break;
           }
 
-          const messageParts = [...string.matchAll(/delta":\{"content":"(.*)"\},"index/g)];
+          const messageParts = [...string.matchAll(/delta":\{"content":"(.*)"\},"finish_reason/g)];
+          console.log(string, messageParts);
+
           messageParts.forEach((part) => {
+            // todo: markdown parser
             const messagePart = part[1].replaceAll('\\n', '<br/>').replace('\\"', '"');
             console.log(string, messagePart);
 
